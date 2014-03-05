@@ -3,6 +3,7 @@ require 'unicorn/configuration'
 module Unicorn::WorkerKiller
   class << self
     attr_accessor :configuration
+    attr_accessor :kill_worker_proc
   end
 
   # Kill the current process by telling it to send signals to itself. If
@@ -23,6 +24,10 @@ module Unicorn::WorkerKiller
 
     logger.warn "#{self} send SIG#{sig} (pid: #{worker_pid}) alive: #{alive_sec} sec (trial #{@@kill_attempts})"
     Process.kill sig, worker_pid
+
+    if kill_worker_proc
+      kill_worker_proc.call(:sig => sig, :pid => worker_pid, :alive => alive_sec, :kill_attempts => @@kill_attempts)
+    end
   end
 
   module Oom
